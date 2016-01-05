@@ -32,9 +32,11 @@ void USpringCharacterLegSpring::TickComponent( float DeltaTime, ELevelTick TickT
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
 	// ...
+
+	
 }
 
-float USpringCharacterLegSpring::GetLandingMult(FVector& Velocity, float DeltaTime) {
+float USpringCharacterLegSpring::GetLandingMult(FVector Velocity, float DeltaTime) {
 	
 	FVector SpringLocStart = GetComponentLocation();
 	FVector SpringLocEnd = SpringLocStart + GetComponentRotation().Vector() * SpringLength;
@@ -60,7 +62,7 @@ float USpringCharacterLegSpring::GetLandingMult(FVector& Velocity, float DeltaTi
 	return ReturnMult;
 }
 
-float USpringCharacterLegSpring::GetSpringForce(FVector& Velocity, float DeltaTime) {
+float USpringCharacterLegSpring::GetSpringForce(FVector Velocity, float DeltaTime) {
 	float Force = GetLandingMult(Velocity, DeltaTime) * ForceThrustMax;
 	
 

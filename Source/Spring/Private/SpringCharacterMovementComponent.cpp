@@ -41,7 +41,7 @@ void USpringCharacterMovementComponent::TickComponent( float DeltaTime, ELevelTi
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, DebugMessage);
 	}
 
-	Velocity += Gravity * DeltaTime;
+	//Velocity += Gravity * DeltaTime;
 
 	FVector AddForce = FVector::ZeroVector;
 
@@ -55,18 +55,18 @@ void USpringCharacterMovementComponent::TickComponent( float DeltaTime, ELevelTi
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, DebugText);
 	}
 
-	Velocity += AddForce * DeltaTime;
+	//Velocity += AddForce * DeltaTime;
 
-	FHitResult* SweepResult = nullptr;
+	//FHitResult* SweepResult = nullptr;
 
-	GetOwner()->AddActorWorldOffset(Velocity, true, SweepResult);
+	//GetOwner()->AddActorWorldOffset(Velocity, true, SweepResult);
 
-	if (SweepResult != nullptr) {
-		if (GEngine) {
-			GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Blue, "Hit Ground!");
-		}
-		Velocity = Velocity.MirrorByVector(SweepResult->ImpactNormal);
-	}
+	//if (SweepResult != nullptr) {
+	//	if (GEngine) {
+	//		GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Blue, "Hit Ground!");
+	//	}
+		//Velocity = Velocity.MirrorByVector(SweepResult->ImpactNormal);
+	//}
 	
 	
 }

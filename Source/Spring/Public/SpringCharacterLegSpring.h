@@ -13,7 +13,7 @@ class SPRING_API USpringCharacterLegSpring : public USceneComponent
 
 private:
 	// Check if you are landing the next frame, prepare time-precise force multiplier
-	float GetLandingMult(FVector& Velocity, float DeltaTime);
+	float GetLandingMult(FVector Velocity, float DeltaTime);
 	
 	
 	float PotentialEnergy = 0;
@@ -33,7 +33,7 @@ public:
 	//class UArrowComponent* Arrow;
 
 	
-	float GetSpringForce(FVector& Velocity, float DeltaTime);
+	float GetSpringForce(FVector Velocity, float DeltaTime);
 
 	float ForceThrustMax = 1250.0f;
 	float SpringLength = 60.f;

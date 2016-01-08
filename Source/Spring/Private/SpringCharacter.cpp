@@ -26,10 +26,23 @@ void ASpringCharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
+	if (!NextFrameForceAdd.ContainsNaN()) {
+		if (GetCharacterMovement()->Mass > 0.f) {
+			FVector VelocityAdd = NextFrameForceAdd / GetCharacterMovement()->Mass;
+			GetCharacterMovement()->Velocity += VelocityAdd;
+			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, "Velocity added: " + VelocityAdd.ToString());
+		} else {
+			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, "Mass is zero (or less)!");
+		}
+	} else {
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, "SpringForceVector is NaN");
+	}
+
 	FVector SpringForceVector = FVector::ZeroVector;
 
+
 	for (auto& Spring : SpringArray) {
-		float SpringForce = Spring->GetSpringForce(GetVelocity(), DeltaTime);
+		float SpringForce = Spring->GetSpringForce(GetCharacterMovement()->Velocity, DeltaTime);
 		FVector SpringDir = Spring->GetComponentRotation().Vector();
 
 		SpringForceVector -= SpringDir * SpringForce;
@@ -38,15 +51,7 @@ void ASpringCharacter::Tick( float DeltaTime )
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, DebugText);
 	}
 
-	UPrimitiveComponent* ForceApplyObject = GetMovementBase();
-	if (ForceApplyObject != nullptr) {
-		ForceApplyObject->AddForce(SpringForceVector);
-	} else {
-		GEngine->AddOnScreenDebugMessage(-1, 0.5, FColor::Red, "MovementBase is Null Reference");
-	}
-	
-	
-
+	NextFrameForceAdd = SpringForceVector;
 }
 
 // Called to bind functionality to input

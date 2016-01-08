@@ -10,6 +10,8 @@ UCLASS()
 class SPRING_API ASpringCharacter : public ACharacter
 {
 	GENERATED_BODY()
+private:
+	FVector NextFrameForceAdd = FVector::ZeroVector;
 
 public:
 	// Sets default values for this character's properties

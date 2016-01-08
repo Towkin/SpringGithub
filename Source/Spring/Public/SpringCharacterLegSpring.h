@@ -15,13 +15,17 @@ private:
 	// Check if you are landing the next frame, prepare time-precise force multiplier
 	float GetLandingMult(FVector Velocity, float DeltaTime);
 	
-	
+	virtual void USpringCharacterLegSpring::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+
 	float PotentialEnergy = 0;
 	bool Grounded = false;
 
 public:	
 	// Sets default values for this component's properties
 	USpringCharacterLegSpring();
+
+	UPROPERTY()
+	class UArrowComponent* ArrowComponent;
 
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -35,7 +39,9 @@ public:
 	
 	float GetSpringForce(FVector Velocity, float DeltaTime);
 
-	float ForceThrustMax = 1250.0f;
+	UPROPERTY(Category = "Spring", EditAnywhere, BlueprintReadWrite)
+	float ForceThrustMax = 1250000.0f;
+	UPROPERTY(Category = "Spring", EditAnywhere, BlueprintReadWrite)
 	float SpringLength = 60.f;
 
 };

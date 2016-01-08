@@ -13,8 +13,9 @@ class USpringCharacterMovementComponent : public UActorComponent {
 
 private:
 
-	FVector Velocity = FVector(0.f, 0.f, 0.f);
+	FVector Velocity = FVector::ZeroVector;
 	FVector Gravity = FVector(0.f, 0.f, -9.82f);
+	FVector NextFrameForceAdd = FVector::ZeroVector;
 
 public:
 	// Sets default values for this component's properties

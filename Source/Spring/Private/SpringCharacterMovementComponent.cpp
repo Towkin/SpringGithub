@@ -41,33 +41,30 @@ void USpringCharacterMovementComponent::TickComponent( float DeltaTime, ELevelTi
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, DebugMessage);
 	}
 
-	//Velocity += Gravity * DeltaTime;
+	Velocity += Gravity * DeltaTime;
+	Velocity += NextFrameForceAdd;
 
-	FVector AddForce = FVector::ZeroVector;
+	FHitResult* MoveResult = nullptr;
+	GetOwner()->AddActorWorldOffset(Velocity * DeltaTime, true, MoveResult, ETeleportType::None);
+
+	if (MoveResult && MoveResult->bBlockingHit) {
+		Velocity = Velocity.MirrorByVector(MoveResult->Normal) * 0.05;
+	}
+
+	FVector SpringForceVector = FVector::ZeroVector;
 
 	for (auto& Spring : SpringArray) {
 		float SpringForce = Spring->GetSpringForce(Velocity, DeltaTime);
 		FVector SpringDir = Spring->GetComponentRotation().Vector();
 
-		AddForce -= SpringDir * SpringForce;
+		SpringForceVector -= SpringDir * SpringForce;
 		
-		FString DebugText = "Force: " + FString::SanitizeFloat(SpringForce) + ", Direction" + SpringDir.ToString() + ", AddForce: " + AddForce.ToString();
+		FString DebugText = "Force: " + FString::SanitizeFloat(SpringForce) + ", Direction" + SpringDir.ToString() + ", AddForce: " + SpringForceVector.ToString();
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, DebugText);
 	}
 
-	//Velocity += AddForce * DeltaTime;
+	NextFrameForceAdd = SpringForceVector;
 
-	//FHitResult* SweepResult = nullptr;
-
-	//GetOwner()->AddActorWorldOffset(Velocity, true, SweepResult);
-
-	//if (SweepResult != nullptr) {
-	//	if (GEngine) {
-	//		GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Blue, "Hit Ground!");
-	//	}
-		//Velocity = Velocity.MirrorByVector(SweepResult->ImpactNormal);
-	//}
-	
 	
 }
 

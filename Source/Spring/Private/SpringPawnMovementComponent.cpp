@@ -37,11 +37,16 @@ void USpringPawnMovementComponent::TickComponent(float DeltaTime, ELevelTick Tic
 	FHitResult MoveResult;
 	SafeMoveUpdatedComponent(Velocity * DeltaTime, UpdatedComponent->GetComponentRotation(), true, MoveResult);
 	
+	for (auto& Spring : SpringArray) {
+		Spring->SetWorldRotation((-SpringDirectionVector - FVector(0.f, 0.f, DirectionFactorZ)).Rotation());
+	}
+	SpringDirectionVector = FVector(0.f);
 	
 	DebugText += "\nVelocity: " + Velocity.ToString();
 	if (MoveResult.IsValidBlockingHit()) {
-		// Remove velocity in the ImpactNormal direciton... 
-		//Velocity = Velocity.ProjectOnToNormal(MoveResult.ImpactNormal);
+		// Remove velocity in the Normal direciton.
+		float BounceFactor = 0.1f;
+		Velocity = (Velocity.ProjectOnToNormal(MoveResult.Normal) * FVector(1.f, 1.f, -BounceFactor)).ProjectOnTo(Velocity);
 		SlideAlongSurface(Velocity * DeltaTime, 1.f - MoveResult.Time, MoveResult.Normal, MoveResult);
 		DebugText += "\nHit: " + MoveResult.ImpactPoint.ToString();
 	}
@@ -65,4 +70,15 @@ void USpringPawnMovementComponent::TickComponent(float DeltaTime, ELevelTick Tic
 		GEngine->AddOnScreenDebugMessage(10, 2, FColor::Blue, DebugText);
 	}
 	
+}
+void USpringPawnMovementComponent::AddInputVector(FVector WorldVector, bool bForce) {
+	SpringDirectionVector += WorldVector;
+}
+
+void USpringPawnMovementComponent::SetSprint(bool SprintEnabled) {
+	if (SprintEnabled) {
+		DirectionFactorZ = FactorSprintZ;
+	} else {
+		DirectionFactorZ = FactorDefaultZ;
+	}
 }

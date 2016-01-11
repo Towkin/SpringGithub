@@ -30,7 +30,6 @@ public:
 	
 	virtual USpringPawnMovementComponent* GetMovementComponent() const override;
 	
-	
 	// Sets default values for this pawn's properties
 	ASpringPawn();
 

@@ -19,6 +19,18 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
 	virtual void AddInputVector(FVector WorldVector, bool bForce = false) override;
+	
+	FVector CalculateLocationAtTime(FVector StartLocation, FVector StartingVelocity, float Time, FVector ConstantForce);
+
+	// MovementBounds
+
+	UPROPERTY(Category = "Physics", EditAnywhere, BlueprintReadWrite)
+	int32 FixedFrameRate = 120;
+	UPROPERTY(Category = "Physics", EditAnywhere, BlueprintReadWrite)
+	int32 MaxUpdatesPerFrame = 10;
+	float FixedDeltaTime = 0.01f;
+	float Accumulator = 0.f;
+	virtual void FixedTick(float DeltaTime);
 
 	TArray<USpringCharacterLegSpring*> SpringArray;
 	FVector Gravity = FVector(0.f, 0.f, -982.f);
@@ -32,5 +44,12 @@ public:
 
 	float DirectionFactorZ = FactorDefaultZ;
 	FVector SpringDirectionVector = FVector(0.f);
+
+	bool MovementGrounded = false;
+
+	UPROPERTY(Category = "AirMove", EditAnywhere, BlueprintReadWrite)
+	float AirMoveForce = 35000.f;
+
+	
 
 };

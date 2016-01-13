@@ -42,7 +42,7 @@ void ASpringCharacter::Tick( float DeltaTime )
 
 
 	for (auto& Spring : SpringArray) {
-		float SpringForce = Spring->GetSpringForce(GetCharacterMovement()->Velocity, DeltaTime);
+		float SpringForce = Spring->GetSpringForce();
 		FVector SpringDir = Spring->GetComponentRotation().Vector();
 
 		SpringForceVector -= SpringDir * SpringForce;

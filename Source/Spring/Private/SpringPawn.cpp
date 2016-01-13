@@ -14,7 +14,6 @@ ASpringPawn::ASpringPawn()
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
 	
-
 	RootCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("RootCapsule"));
 	RootCapsule->InitCapsuleSize(34.0f, 50.0f);
 

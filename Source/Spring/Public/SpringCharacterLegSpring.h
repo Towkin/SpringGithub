@@ -13,12 +13,9 @@ class SPRING_API USpringCharacterLegSpring : public USceneComponent
 
 private:
 	// Check if you are landing the next frame, prepare time-precise force multiplier
-	float GetLandingMult(FVector Velocity, float DeltaTime);
+	float GetLandingMult();
 	
 	virtual void USpringCharacterLegSpring::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-
-	float PotentialEnergy = 0;
-	bool Grounded = false;
 
 public:	
 	// Sets default values for this component's properties
@@ -33,15 +30,25 @@ public:
 	// Called every frame
 	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
 
-	//UPROPERTY(VisibleAnywhere, Category="SpringComponents")
-	//class UArrowComponent* Arrow;
+	FHitResult LastHit;
+	bool Grounded = false;
+	FVector GroundedLocation = FVector::ZeroVector;
+	bool Accelerating = false;
+	float PotentialVelocity = 0.f;
+
+	FVector GroundVector = FVector(0.f, 0.f, -1.f);
+	float GroundScalar = 1.f;
+	FVector OffsetVector = FVector(0.f);
+
+	float RotationLerpSpeed = 0.25f;
 
 	
-	float GetSpringForce(FVector Velocity, float DeltaTime);
+	void VelocityModify(FVector& Velocity, float DeltaTime);
+	float GetSpringForce();
 
 	UPROPERTY(Category = "Spring", EditAnywhere, BlueprintReadWrite)
 	float ForceThrustMax = 1250000.0f;
+
 	UPROPERTY(Category = "Spring", EditAnywhere, BlueprintReadWrite)
 	float SpringLength = 60.f;
-
 };

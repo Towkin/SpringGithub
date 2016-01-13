@@ -46,57 +46,64 @@ void USpringCharacterLegSpring::PostEditChangeProperty(struct FPropertyChangedEv
 // Called every frame
 void USpringCharacterLegSpring::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
+	
+	
+	FRotator TargetRotation = (GroundVector * GroundScalar + OffsetVector).Rotation();
+
+	SetWorldRotation(FQuat::Slerp(GetComponentQuat(), TargetRotation.Quaternion(), RotationLerpSpeed).Rotator());
+	if (GEngine) {
+		GEngine->AddOnScreenDebugMessage(32, 2.0, FColor::Blue, "RotationVector: " + GetComponentRotation().Vector().ToString() + "TargetRotation: " + TargetRotation.Vector().ToString());
+	}
+
+
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 	
 	// ...
 }
 
-float USpringCharacterLegSpring::GetLandingMult(FVector Velocity, float DeltaTime) {
+float USpringCharacterLegSpring::GetLandingMult() {
 	
 	FVector SpringLocStart = GetComponentLocation();
 	FVector SpringLocEnd = SpringLocStart + GetComponentRotation().Vector() * SpringLength;
-	FVector SpringLocEndNextFrame = SpringLocEnd + Velocity * DeltaTime;
 
-	
+	//FVector SpringLocStartNextFrame = SpringLocStart + Velocity * DeltaTime;
+	//FVector SpringLocEndNextFrame = SpringLocEnd + Velocity * DeltaTime;
+
 	FHitResult HitResult;
 	FCollisionObjectQueryParams Params(ECollisionChannel::ECC_WorldStatic);
 
-	float ReturnMult = 0.f;
+	
 
-	if (Grounded) {
-		ReturnMult = 1.f;
-		
-		Grounded = GetWorld()->LineTraceSingleByObjectType(HitResult, SpringLocStart, SpringLocEndNextFrame, Params);
+	Grounded = GetWorld()->LineTraceSingleByObjectType(HitResult, SpringLocStart, SpringLocEnd, Params);
 
-		if (!Grounded) {
-			// No hit, do another line trace to get impact point
-			bool AnyHit = GetWorld()->LineTraceSingleByObjectType(HitResult, SpringLocStart, SpringLocEnd, Params);
+	float ReturnMult = 1.f - HitResult.Time;
 
-			if (AnyHit) {
-				ReturnMult = (HitResult.ImpactPoint - SpringLocEnd).Size() / (SpringLocEnd - SpringLocEndNextFrame).Size();
-			} else {
-				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, "No hit...");
-			}
-		}
 
-	// If not grounded last frame
-	} else {
-		Grounded = GetWorld()->LineTraceSingleByObjectType(HitResult, SpringLocStart, SpringLocEndNextFrame, Params);
-
-		if (Grounded) {
-			ReturnMult = (HitResult.ImpactPoint - SpringLocEndNextFrame).Size() / (SpringLocEnd - SpringLocEndNextFrame).Size();
-		}
-	}
-
-	FString DebugText = "ReturnMult: " + FString::SanitizeFloat(ReturnMult);
-	GEngine->AddOnScreenDebugMessage(15, 2, FColor::Blue, DebugText);
+	
 
 	return ReturnMult;
 }
 
-float USpringCharacterLegSpring::GetSpringForce(FVector Velocity, float DeltaTime) {
+float USpringCharacterLegSpring::GetSpringForce() {
 	
-	float Force = GetLandingMult(Velocity, DeltaTime) * ForceThrustMax;
-	
+	float Force = GetLandingMult() * ForceThrustMax;
+
+	FString DebugText = "Force: " + FString::SanitizeFloat(Force) + " / " + FString::SanitizeFloat(ForceThrustMax);
+	GEngine->AddOnScreenDebugMessage(4213, 2, FColor::Blue, DebugText);
+
 	return Force;
+}
+
+
+void USpringCharacterLegSpring::VelocityModify(FVector& Velocity, float DeltaTime) {
+	FVector SpringLocStart = GetComponentLocation();
+	FVector SpringLocEnd = SpringLocStart + GetComponentRotation().Vector() * SpringLength;
+	//FVector SpringLocEndNextFrame = SpringLocEnd + Velocity * DeltaTime;
+
+	FHitResult HitResult;
+	FCollisionObjectQueryParams Params(ECollisionChannel::ECC_WorldDynamic);
+	
+	Grounded = GetWorld()->LineTraceSingleByObjectType(HitResult, SpringLocStart, SpringLocEnd, Params);
+
+
 }

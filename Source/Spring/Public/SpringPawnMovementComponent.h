@@ -22,8 +22,6 @@ public:
 	
 	FVector CalculateLocationAtTime(FVector StartLocation, FVector StartingVelocity, float Time, FVector ConstantForce);
 
-	// MovementBounds
-
 	UPROPERTY(Category = "Physics", EditAnywhere, BlueprintReadWrite)
 	int32 FixedFrameRate = 120;
 	UPROPERTY(Category = "Physics", EditAnywhere, BlueprintReadWrite)
@@ -36,8 +34,11 @@ public:
 	FVector Gravity = FVector(0.f, 0.f, -982.f);
 	float Mass = 100;
 
-	float FactorDefaultZ = 2.0f;
-	float FactorSprintZ = 1.0f;
+	UPROPERTY(Category = "Spring", EditAnywhere, BlueprintReadWrite)
+	float DirectionLerpValue = 0.9915f;
+
+	float FactorDefaultZ = 3.0f;
+	float FactorSprintZ = 2.0f;
 
 	UFUNCTION(BlueprintCallable, Category = "MovementController|Input", meta = (Keywords = "Sprint"))
 	virtual void SetSprint(bool SprintEnabled);
@@ -50,6 +51,7 @@ public:
 	UPROPERTY(Category = "AirMove", EditAnywhere, BlueprintReadWrite)
 	float AirMoveForce = 35000.f;
 
-	
+	UFUNCTION(BlueprintCallable, Category = "MovementController|Functions", meta = (Keywords = "Trajectory"))
+	virtual void DrawTrajectory(float Time, float Delta, FVector Offset = FVector(0.f, 0.f, 0.f));
 
 };

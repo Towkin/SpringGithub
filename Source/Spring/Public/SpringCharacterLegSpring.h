@@ -33,18 +33,25 @@ public:
 	FHitResult LastHit;
 	bool Grounded = false;
 	FVector GroundedLocation = FVector::ZeroVector;
-	bool Accelerating = false;
-	float PotentialVelocity = 0.f;
+	//bool Accelerating = false;
+	//float PotentialVelocity = 0.f;
 
+	//FVector VelocityVector = FVector(0.f);
 	FVector GroundVector = FVector(0.f, 0.f, -1.f);
 	float GroundScalar = 1.f;
 	FVector OffsetVector = FVector(0.f);
+	FVector TargetVector = FVector(0.f);
 
-	float RotationLerpSpeed = 0.25f;
+	//float RotationLerpSpeed = 0.5f;
 
-	
+	UPROPERTY(Category = "Spring", EditAnywhere, BlueprintReadWrite)
+	bool DrawSpringLine = true;
+
 	void VelocityModify(FVector& Velocity, float DeltaTime);
+
 	float GetSpringForce();
+	FVector GetSpringStart();
+	FVector GetSpringEnd();
 
 	UPROPERTY(Category = "Spring", EditAnywhere, BlueprintReadWrite)
 	float ForceThrustMax = 1250000.0f;

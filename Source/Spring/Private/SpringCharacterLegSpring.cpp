@@ -47,14 +47,10 @@ void USpringCharacterLegSpring::PostEditChangeProperty(struct FPropertyChangedEv
 void USpringCharacterLegSpring::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
 	
-	
-	FRotator TargetRotation = (GroundVector * GroundScalar + OffsetVector).Rotation();
-
-	SetWorldRotation(FQuat::Slerp(GetComponentQuat(), TargetRotation.Quaternion(), RotationLerpSpeed).Rotator());
-	if (GEngine) {
-		GEngine->AddOnScreenDebugMessage(32, 2.0, FColor::Blue, "RotationVector: " + GetComponentRotation().Vector().ToString() + "TargetRotation: " + TargetRotation.Vector().ToString());
+	if (DrawSpringLine) {
+		DrawDebugLine(GetWorld(), GetSpringStart(), GetSpringEnd(), FColor::Green, false, -1.0f, (uint8)'\000', 3);
 	}
-
+	
 
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 	
@@ -63,23 +59,14 @@ void USpringCharacterLegSpring::TickComponent( float DeltaTime, ELevelTick TickT
 
 float USpringCharacterLegSpring::GetLandingMult() {
 	
-	FVector SpringLocStart = GetComponentLocation();
-	FVector SpringLocEnd = SpringLocStart + GetComponentRotation().Vector() * SpringLength;
-
-	//FVector SpringLocStartNextFrame = SpringLocStart + Velocity * DeltaTime;
-	//FVector SpringLocEndNextFrame = SpringLocEnd + Velocity * DeltaTime;
-
 	FHitResult HitResult;
 	FCollisionObjectQueryParams Params(ECollisionChannel::ECC_WorldStatic);
 
-	
+	Grounded = GetWorld()->LineTraceSingleByObjectType(HitResult, GetSpringStart(), GetSpringEnd(), Params);
 
-	Grounded = GetWorld()->LineTraceSingleByObjectType(HitResult, SpringLocStart, SpringLocEnd, Params);
+	GroundedLocation = HitResult.ImpactPoint;
 
 	float ReturnMult = 1.f - HitResult.Time;
-
-
-	
 
 	return ReturnMult;
 }
@@ -87,9 +74,6 @@ float USpringCharacterLegSpring::GetLandingMult() {
 float USpringCharacterLegSpring::GetSpringForce() {
 	
 	float Force = GetLandingMult() * ForceThrustMax;
-
-	FString DebugText = "Force: " + FString::SanitizeFloat(Force) + " / " + FString::SanitizeFloat(ForceThrustMax);
-	GEngine->AddOnScreenDebugMessage(4213, 2, FColor::Blue, DebugText);
 
 	return Force;
 }
@@ -106,4 +90,12 @@ void USpringCharacterLegSpring::VelocityModify(FVector& Velocity, float DeltaTim
 	Grounded = GetWorld()->LineTraceSingleByObjectType(HitResult, SpringLocStart, SpringLocEnd, Params);
 
 
+}
+
+FVector USpringCharacterLegSpring::GetSpringStart() {
+	return GetComponentLocation();
+}
+
+FVector USpringCharacterLegSpring::GetSpringEnd() {
+	return GetComponentLocation() + GetComponentRotation().Vector() * SpringLength;
 }

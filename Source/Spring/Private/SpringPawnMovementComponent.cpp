@@ -36,27 +36,28 @@ void USpringPawnMovementComponent::TickComponent(float DeltaTime, ELevelTick Tic
 
 	for (auto& Spring : SpringArray) {
 
-		FVector NextHitNormal(0.f, 0.f, -1.f);
+		FVector NextHitNormal(0.f, 0.f, 1.f);
 		FHitResult NextHitTest;
 
-		FVector NextHitStartLocation = Spring->GetComponentLocation();
+		FVector NextHitStartLocation = Spring->GetSpringEnd();;
 		FVector NextHitEndLocation = CalculateLocationAtTime(NextHitStartLocation, Velocity, 1.f, Gravity);
 		FCollisionObjectQueryParams NextHitParams(ECollisionChannel::ECC_WorldStatic);
 		bool NextHit = GetWorld()->LineTraceSingleByObjectType(NextHitTest, NextHitStartLocation, NextHitEndLocation, NextHitParams);
 
-		FColor DrawColor = FColor::Blue;
+		//FColor DrawColor = FColor::Blue;
 
 		if (NextHit) {
 			NextHitNormal = NextHitTest.Normal;
-			DrawColor = FColor::Red;
+			//DrawColor = FColor::Red;
 		}
 
-		DrawDebugLine(GetWorld(), NextHitStartLocation, NextHitEndLocation, DrawColor, false, 1.0f, (uint8)'\000', 5.f);
+		//DrawDebugLine(GetWorld(), NextHitStartLocation, NextHitEndLocation, DrawColor, false, 0.1f, (uint8)'\000', 5.f);
 
 
 		Spring->GroundVector = -NextHitNormal;
 		Spring->GroundScalar = DirectionFactorZ;
 		Spring->OffsetVector = -SpringDirectionVector;
+		Spring->TargetVector = Spring->GroundVector * Spring->GroundScalar + Spring->OffsetVector;
 
 		//Spring->SetWorldRotation(FQuat::Slerp(Spring->GetComponentQuat(), (-SpringDirectionVector - FVector(0.f, 0.f, DirectionFactorZ)).Rotation().Quaternion(), 0.25f).Rotator());
 	}
@@ -77,7 +78,7 @@ void USpringPawnMovementComponent::TickComponent(float DeltaTime, ELevelTick Tic
 		Accumulator -= FixedDeltaTime;
 		if (++FixedUpdates >= MaxUpdatesPerFrame) {
 			if (GEngine) {
-				GEngine->AddOnScreenDebugMessage(20, 2, FColor::Red, "SpringPawn physics simulation reached the maximum update count: " + FString::SanitizeFloat(MaxUpdatesPerFrame));
+				//GEngine->AddOnScreenDebugMessage(20, 2, FColor::Red, "SpringPawn physics simulation reached the maximum update count: " + FString::SanitizeFloat(MaxUpdatesPerFrame));
 			}
 			break;
 		}
@@ -87,8 +88,8 @@ void USpringPawnMovementComponent::TickComponent(float DeltaTime, ELevelTick Tic
 	SpringDirectionVector = FVector(0.f);
 
 	if (GEngine) {
-		GEngine->AddOnScreenDebugMessage(15, 2, FColor::Blue, "Ran " + FString::SanitizeFloat(FixedUpdates) + " FixedTicks this frame.");
-		GEngine->AddOnScreenDebugMessage(18, 2, FColor::Blue, "Velocity: " + Velocity.ToString() + " (Frame change: " + (Velocity - OldVelocity).ToString() + ")");
+		//GEngine->AddOnScreenDebugMessage(15, 2, FColor::Blue, "Ran " + FString::SanitizeFloat(FixedUpdates) + " FixedTicks this frame.");
+		//GEngine->AddOnScreenDebugMessage(18, 2, FColor::Blue, "Velocity: " + Velocity.ToString() + " (Frame change: " + (Velocity - OldVelocity).ToString() + ")");
 	}
 	
 }
@@ -118,12 +119,22 @@ void USpringPawnMovementComponent::FixedTick(float DeltaTime) {
 	bool GroundedTick = false;
 
 	for (auto& Spring : SpringArray) {
+		FRotator SpringTickRotation;
+		if (Spring->Grounded) {
+			SpringTickRotation = (Spring->GroundedLocation - Spring->GetSpringStart()).Rotation();
+		} else {
+			// Lerp between Velocity (0) and TargetVector (1)
+			SpringTickRotation = (Velocity + DirectionLerpValue * (Spring->TargetVector - Velocity)).Rotation();
+		}
+
+		Spring->SetWorldRotation(SpringTickRotation);
+
 		float SpringForce = Spring->GetSpringForce();
 		FVector SpringDir = Spring->GetComponentRotation().Vector();
 
 		SpringForceVector -= SpringDir * SpringForce;
 
-		GEngine->AddOnScreenDebugMessage(6783, 2.f, FColor::Yellow, "ForceVector: " + SpringForceVector.ToString() + ", SpringForce: " + FString::SanitizeFloat(SpringForce));
+		//GEngine->AddOnScreenDebugMessage(6783, 2.f, FColor::Yellow, "ForceVector: " + SpringForceVector.ToString() + ", SpringForce: " + FString::SanitizeFloat(SpringForce));
 
 		GroundedTick = GroundedTick || Spring->Grounded;
 	}
@@ -135,7 +146,7 @@ void USpringPawnMovementComponent::FixedTick(float DeltaTime) {
 	}
 
 	NextFrameVelocityAdd *= DeltaTime;
-	GEngine->AddOnScreenDebugMessage(32873, 2.f, FColor::Cyan, "VelocityAdd: " + NextFrameVelocityAdd.ToString());
+	//GEngine->AddOnScreenDebugMessage(32873, 2.f, FColor::Cyan, "VelocityAdd: " + NextFrameVelocityAdd.ToString());
 }
 
 
@@ -151,4 +162,34 @@ FVector USpringPawnMovementComponent::CalculateLocationAtTime(FVector StartingLo
 	// PositionOffset = StartingVelocity * Time + (1/2) * ConstantForce * Time^2
 
 	return StartingLocation + (StartingVelocity * Time) + (0.5 * ConstantForce * Time * Time);
+}
+
+void USpringPawnMovementComponent::DrawTrajectory(float Time, float Delta, FVector Offset) {
+	
+	FVector StartPoint = GetOwner()->GetActorLocation() + Offset;
+
+	FVector LastPoint = StartPoint;
+	FVector NextPoint;
+	FHitResult HitResult;
+	FCollisionObjectQueryParams NextHitParams(ECollisionChannel::ECC_WorldStatic);
+	
+
+	for (float i = Delta; i <= Time; i += Delta) {
+		NextPoint = CalculateLocationAtTime(StartPoint, Velocity, i, Gravity);
+
+		bool FoundHit = GetWorld()->LineTraceSingleByObjectType(HitResult, LastPoint, NextPoint, NextHitParams);
+
+		if (FoundHit) {
+			NextPoint = HitResult.ImpactPoint;
+		}
+
+		// Draw stuff
+		DrawDebugLine(GetWorld(), LastPoint, NextPoint, FColor::Blue, false, -1.f, (uint8)'\000', 5.f);
+
+		if (FoundHit) {
+			break;
+		}
+
+		LastPoint = NextPoint;
+	}
 }

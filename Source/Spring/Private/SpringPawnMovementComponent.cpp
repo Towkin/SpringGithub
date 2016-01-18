@@ -57,22 +57,37 @@ void USpringPawnMovementComponent::TickComponent(float DeltaTime, ELevelTick Tic
 		Spring->GroundVector = -NextHitNormal;
 		Spring->GroundScalar = DirectionFactorZ;
 		Spring->OffsetVector = -SpringDirectionVector;
+		
+		//FQuat OffsetRotation = NextHitNormal.Rotation().Quaternion() - FVector::UpVector.Rotation().Quaternion();
+
+		
+
 		Spring->TargetVector = Spring->GroundVector * Spring->GroundScalar + Spring->OffsetVector;
 
+		Spring->TargetVector.Normalize();
+
 		//Spring->SetWorldRotation(FQuat::Slerp(Spring->GetComponentQuat(), (-SpringDirectionVector - FVector(0.f, 0.f, DirectionFactorZ)).Rotation().Quaternion(), 0.25f).Rotator());
+
+		//if (GEngine) {
+			//GEngine->AddOnScreenDebugMessage((uint64)(1521 + Spring->GetUniqueID()), 2, FColor::Blue, "GroundVector: " + Spring->GroundVector.ToString() + ", OffsetVector: " + Spring->OffsetVector.ToString() + ", TargetVector: " + Spring->TargetVector.ToString() + " (Rotation: " + OffsetRotation.ToString());
+			//GEngine->AddOnScreenDebugMessage(18, 2, FColor::Blue, "Velocity: " + Velocity.ToString() + " (Frame change: " + (Velocity - OldVelocity).ToString() + ")");
+		//}
+
 	}
 
+	// Accumulator accumulates time as each frame passes
 	Accumulator += DeltaTime;
 	
-	FVector OldVelocity = Velocity;
-
 	if (FixedDeltaTime <= 0.f) {
 		if (GEngine) {
 			GEngine->AddOnScreenDebugMessage(30, 2, FColor::Red, "Invalid FixedDeltaTime: " + FString::SanitizeFloat(FixedDeltaTime));
 		}
 		return;
 	}
+	// New counter for this frame's FixedTick-runs
 	int FixedUpdates = 0;
+
+
 	while (Accumulator >= FixedDeltaTime) {
 		FixedTick(FixedDeltaTime);
 		Accumulator -= FixedDeltaTime;
@@ -124,7 +139,13 @@ void USpringPawnMovementComponent::FixedTick(float DeltaTime) {
 			SpringTickRotation = (Spring->GroundedLocation - Spring->GetSpringStart()).Rotation();
 		} else {
 			// Lerp between Velocity (0) and TargetVector (1)
-			SpringTickRotation = (Velocity + DirectionLerpValue * (Spring->TargetVector - Velocity)).Rotation();
+			
+			FVector VelocityNormalized = Velocity;
+			VelocityNormalized.Normalize();
+			
+			SpringTickRotation = (VelocityNormalized + DirectionLerpValue * (Spring->TargetVector - VelocityNormalized)).Rotation();
+
+
 		}
 
 		Spring->SetWorldRotation(SpringTickRotation);

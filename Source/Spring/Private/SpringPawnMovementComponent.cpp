@@ -44,49 +44,36 @@ void USpringPawnMovementComponent::TickComponent(float DeltaTime, ELevelTick Tic
 		FCollisionObjectQueryParams NextHitParams(ECollisionChannel::ECC_WorldStatic);
 		bool NextHit = GetWorld()->LineTraceSingleByObjectType(NextHitTest, NextHitStartLocation, NextHitEndLocation, NextHitParams);
 
-		//FColor DrawColor = FColor::Blue;
-
+		
 		if (NextHit) {
 			NextHitNormal = NextHitTest.Normal;
-			//DrawColor = FColor::Red;
 		}
 
-		//DrawDebugLine(GetWorld(), NextHitStartLocation, NextHitEndLocation, DrawColor, false, 0.1f, (uint8)'\000', 5.f);
-
-
+		
 		Spring->GroundVector = -NextHitNormal;
 		Spring->GroundScalar = DirectionFactorZ;
 		Spring->OffsetVector = -SpringDirectionVector;
 		
-		//FQuat OffsetRotation = NextHitNormal.Rotation().Quaternion() - FVector::UpVector.Rotation().Quaternion();
-
-		
-
 		Spring->TargetVector = Spring->GroundVector * Spring->GroundScalar + Spring->OffsetVector;
 
 		Spring->TargetVector.Normalize();
 
-		//Spring->SetWorldRotation(FQuat::Slerp(Spring->GetComponentQuat(), (-SpringDirectionVector - FVector(0.f, 0.f, DirectionFactorZ)).Rotation().Quaternion(), 0.25f).Rotator());
-
-		//if (GEngine) {
-			//GEngine->AddOnScreenDebugMessage((uint64)(1521 + Spring->GetUniqueID()), 2, FColor::Blue, "GroundVector: " + Spring->GroundVector.ToString() + ", OffsetVector: " + Spring->OffsetVector.ToString() + ", TargetVector: " + Spring->TargetVector.ToString() + " (Rotation: " + OffsetRotation.ToString());
-			//GEngine->AddOnScreenDebugMessage(18, 2, FColor::Blue, "Velocity: " + Velocity.ToString() + " (Frame change: " + (Velocity - OldVelocity).ToString() + ")");
-		//}
-
 	}
 
-	// Accumulator accumulates time as each frame passes
-	Accumulator += DeltaTime;
-	
 	if (FixedDeltaTime <= 0.f) {
 		if (GEngine) {
 			GEngine->AddOnScreenDebugMessage(30, 2, FColor::Red, "Invalid FixedDeltaTime: " + FString::SanitizeFloat(FixedDeltaTime));
 		}
 		return;
 	}
+
+	// Accumulator accumulates time as each frame passes
+	Accumulator += DeltaTime;
+	
 	// New counter for this frame's FixedTick-runs
 	int FixedUpdates = 0;
 
+	GroundedLastFrame = false;
 
 	while (Accumulator >= FixedDeltaTime) {
 		FixedTick(FixedDeltaTime);
@@ -99,6 +86,11 @@ void USpringPawnMovementComponent::TickComponent(float DeltaTime, ELevelTick Tic
 		}
 	}
 
+	if (!HitGroundLastFrame && GroundedLastFrame) {
+		HitGroundLastFrame = true;
+	} else {
+		HitGroundLastFrame = false;
+	}
 
 	SpringDirectionVector = FVector(0.f);
 
@@ -164,6 +156,8 @@ void USpringPawnMovementComponent::FixedTick(float DeltaTime) {
 	
 	if (!GroundedTick) {
 		NextFrameVelocityAdd += SpringDirectionVector.GetClampedToMaxSize(1.f) * (AirMoveForce / Mass);
+	} else {
+		GroundedLastFrame = true;
 	}
 
 	NextFrameVelocityAdd *= DeltaTime;

@@ -31,7 +31,9 @@ public:
 	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
 
 	FHitResult LastHit;
+	UPROPERTY(BlueprintReadOnly, Category = "Variables|Physics")
 	bool Grounded = false;
+	UPROPERTY(BlueprintReadOnly, Category = "Variables|Physics")
 	FVector GroundedLocation = FVector::ZeroVector;
 	//bool Accelerating = false;
 	//float PotentialVelocity = 0.f;
@@ -49,8 +51,11 @@ public:
 
 	void VelocityModify(FVector& Velocity, float DeltaTime);
 
+	UFUNCTION(BlueprintCallable, Category = "SpringLeg", meta = (Keywords = "Spring"))
 	float GetSpringForce();
+	UFUNCTION(BlueprintCallable, Category = "SpringLeg", meta = (Keywords = "Spring"))
 	FVector GetSpringStart();
+	UFUNCTION(BlueprintCallable, Category = "SpringLeg", meta = (Keywords = "Spring"))
 	FVector GetSpringEnd();
 
 	UPROPERTY(Category = "Spring", EditAnywhere, BlueprintReadWrite)

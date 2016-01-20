@@ -47,6 +47,10 @@ public:
 	FVector SpringDirectionVector = FVector(0.f);
 
 	bool MovementGrounded = false;
+	UPROPERTY(BlueprintReadOnly, Category = "Variables|Physics")
+	bool GroundedLastFrame = false;
+	UPROPERTY(BlueprintReadOnly, Category = "Variables|Physics")
+	bool HitGroundLastFrame = false;
 
 	UPROPERTY(Category = "AirMove", EditAnywhere, BlueprintReadWrite)
 	float AirMoveForce = 35000.f;

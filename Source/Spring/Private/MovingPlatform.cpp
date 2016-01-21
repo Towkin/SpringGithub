@@ -24,5 +24,13 @@ void AMovingPlatform::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
+	SetActorLocation(GetActorLocation() + Velocity * DeltaTime);
+
+}
+
+void AMovingPlatform::MovePlatform(FVector TargetLocation, float OverTime) {
+
+
+
 }
 

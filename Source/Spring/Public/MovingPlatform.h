@@ -20,6 +20,17 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
+	// TODO: Actually do something :P
+	void MovePlatform(FVector TargetLocation, float OverTime);
 	
-	
+	//FVector CurrentTargetLocation = FVector::ZeroVector;
+
+	/**
+	 * The actor's velocity changes how fast or slow the object is moving.
+	 * It's used in it's Tick-function.
+	 */
+	UPROPERTY(BlueprintReadWrite, Category = "Platform")
+	FVector Velocity = FVector::ZeroVector;
+
+
 };

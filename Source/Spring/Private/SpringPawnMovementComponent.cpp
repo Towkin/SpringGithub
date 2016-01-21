@@ -116,7 +116,9 @@ void USpringPawnMovementComponent::FixedTick(float DeltaTime) {
 	if (MoveResult.IsValidBlockingHit()) {
 		// Remove velocity in the Normal direciton.
 		float BounceFactor = 0.1f;
-		Velocity = (Velocity.ProjectOnToNormal(MoveResult.Normal) * FVector(1.f, 1.f, -BounceFactor)).ProjectOnTo(Velocity);
+		Velocity = FVector::VectorPlaneProject(Velocity, MoveResult.Normal);
+
+		//Velocity = (Velocity.ProjectOnToNormal(MoveResult.Normal) * FVector(1.f, 1.f, -BounceFactor)).ProjectOnTo(Velocity);
 		SlideAlongSurface(Velocity * DeltaTime, 1.f - MoveResult.Time, MoveResult.Normal, MoveResult);
 	}
 

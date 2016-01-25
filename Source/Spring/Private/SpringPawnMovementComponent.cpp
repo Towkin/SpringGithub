@@ -181,9 +181,9 @@ FVector USpringPawnMovementComponent::CalculateLocationAtTime(FVector StartingLo
 	return StartingLocation + (StartingVelocity * Time) + (0.5 * ConstantForce * Time * Time);
 }
 
-void USpringPawnMovementComponent::DrawTrajectory(float Time, float Delta, FVector Offset) {
+void USpringPawnMovementComponent::DrawTrajectory(float Time, float Delta, FVector Location) {
 	
-	FVector StartPoint = GetOwner()->GetActorLocation() + Offset;
+	FVector StartPoint = Location;
 
 	FVector LastPoint = StartPoint;
 	FVector NextPoint;
@@ -202,6 +202,8 @@ void USpringPawnMovementComponent::DrawTrajectory(float Time, float Delta, FVect
 
 		// Draw stuff
 		DrawDebugLine(GetWorld(), LastPoint, NextPoint, FColor::Blue, false, -1.f, (uint8)'\000', 5.f);
+
+		
 
 		if (FoundHit) {
 			break;

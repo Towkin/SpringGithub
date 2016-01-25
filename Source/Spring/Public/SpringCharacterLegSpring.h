@@ -14,9 +14,9 @@ class SPRING_API USpringCharacterLegSpring : public USceneComponent
 private:
 	// Check if you are landing the next frame, prepare time-precise force multiplier
 	float GetLandingMult();
-	
+#if WITH_EDITOR
 	virtual void USpringCharacterLegSpring::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-
+#endif
 public:	
 	// Sets default values for this component's properties
 	USpringCharacterLegSpring();

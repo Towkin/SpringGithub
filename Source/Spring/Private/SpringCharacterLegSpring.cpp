@@ -12,10 +12,12 @@ USpringCharacterLegSpring::USpringCharacterLegSpring()
 	bWantsBeginPlay = true;
 	PrimaryComponentTick.bCanEverTick = true;
 
+#if WITH_EDITOR
 	ArrowComponent = CreateDefaultSubobject<UArrowComponent>("LegArrow");
 	ArrowComponent->SnapTo(this);
 	
 	ArrowComponent->SetWorldScale3D(FVector(SpringLength / 100, 1.f, 1.f));
+#endif
 	// ...
 }
 

@@ -56,6 +56,6 @@ public:
 	float AirMoveForce = 35000.f;
 
 	UFUNCTION(BlueprintCallable, Category = "MovementController|Functions", meta = (Keywords = "Trajectory"))
-	virtual void DrawTrajectory(float Time, float Delta, FVector Offset = FVector(0.f, 0.f, 0.f));
+	virtual void DrawTrajectory(float Time, float Delta, FVector Location);
 
 };
